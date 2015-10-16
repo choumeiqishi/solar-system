@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Seen 3D</title>
+	<style type="text/css">
+		body {background-color: #000;}
+	</style>
+	<script type="text/javascript" src="seen.min.js"></script>
+</head>
+<body>
+	<canvas width="900" height="500" id="seen-canvas"></canvas>
+	<script type="text/javascript">
+  		var width  = 900;
+  		var height = 500;
+
+  		var shape = seen.Shapes.sphere(3).scale(height * 0.2);
+  		seen.Colors.randomSurfaces2(shape);
+
+  		var scene = new seen.Scene({
+  			model    : seen.Models.default().add(shape),
+    		viewport : seen.Viewports.center(width, height)
+  		});
+
+  		var context = seen.Context('seen-canvas', scene).render();
+  		updateHue(100);
+
+	  	context.animate().onBefore(function(t, dt) {
+	  		shape.rotx(dt*1e-4);
+	  		shape.roty(dt*1e-4);
+	  	}).start();
+	  	
+
+	  	var dragger = new seen.Drag(document.getElementById('seen-canvas'), {inertia : true});
+  		dragger.on('drag.rotate', function (e){
+    		var xform = seen.Quaternion.xyToTransform(e.offsetRelative[0], e.offsetRelative[1]);
+    		shape.transform(xform);
+    		context.render();
+  		});
+
+
+		function updateHue (hue) {
+	    	var hue = hue / 100.0;
+	    	for (var i=0; i<shape.surfaces.length; i++) {
+	    		var surf = shape.surfaces[i];
+				surf.fillMaterial.color = seen.Colors.hsl(hue, 0.5, 0.5);
+	      		surf.fillMaterial.specularColor = surf.fillMaterial.color;
+	      		surf.dirty = true;
+	    	}
+	      
+	    	context.render();
+		}
+	</script>
+</body>
+</html>
